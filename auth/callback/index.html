@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>VexelBridge 로그인</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #141317; color: #f4f3f6; font-family: 'Pretendard', 'Malgun Gothic', system-ui, sans-serif; }
+  main { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 24px; text-align: center; }
+  h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  p { margin: 0; color: #b9b7bf; font-size: 15px; line-height: 1.6; }
+  a.open { display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; border-radius: 999px; background: #f4f3f6; color: #141317; font-weight: 700; text-decoration: none; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title">VexelBridge로 돌아갑니다</h1>
+  <p id="words">앱이 열리지 않으면 아래 단추를 누르세요.</p>
+  <a class="open" id="open" href="#" hidden>VexelBridge 열기</a>
+</main>
+<script>
+  // The sign-in provider sends the browser here with a one-time code (useless without the app's own PKCE verifier);
+  // it goes on to the app by its link, and leaves the address bar and history.
+  (function () {
+    var query = new URLSearchParams(location.search);
+    var hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+    var code = query.get('code') || '';
+    var state = query.get('state') || '';
+    var error = query.get('error_description') || hash.get('error_description') || query.get('error') || hash.get('error');
+    history.replaceState(null, '', location.pathname);
+    var title = document.getElementById('title'), words = document.getElementById('words'), open = document.getElementById('open');
+    if (error) {
+      title.textContent = '로그인하지 못했습니다';
+      words.textContent = String(error).slice(0, 200);
+      return;
+    }
+    if (!/^[A-Za-z0-9-]{16,128}$/.test(code) || !/^[A-Za-z0-9_-]{16,128}$/.test(state)) {
+      title.textContent = '로그인 정보가 없습니다';
+      words.textContent = '앱에서 다시 로그인해 주세요.';
+      return;
+    }
+    var target = 'com.sinwoo.slate://auth/callback?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state);
+    open.href = target;
+    open.hidden = false;
+    location.href = target;
+  })();
+</script>
+</body>
+</html>
